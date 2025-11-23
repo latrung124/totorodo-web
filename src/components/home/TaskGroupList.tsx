@@ -86,37 +86,78 @@ const FilterPopover: React.FC<FilterPopoverProps> = ({ type, onClose, isOpen }) 
 
 export const TaskGroupList: React.FC = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Filter groups based on search query
+  const filteredGroups = TASK_GROUPS.filter(group =>
+    group.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    group.desc.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <section className="w-80 bg-white rounded-2xl shadow-sm flex flex-col">
-      <div className="p-4 border-b border-gray-100 flex justify-between items-center">
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 rounded-full bg-gray-200 border border-gray-300 overflow-hidden">
-            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User" />
+      <div className="p-4 border-b border-gray-100 flex justify-between items-center h-16">
+        {isSearchOpen ? (
+          <div className="flex items-center w-full gap-2 animate-in fade-in slide-in-from-right-5 duration-200">
+            <Search size={16} className="text-gray-400" />
+            <input 
+              autoFocus
+              type="text" 
+              placeholder="Search groups..." 
+              className="flex-1 bg-transparent border-none outline-none text-sm text-gray-800 placeholder-gray-400 h-full"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onBlur={() => {
+                if (searchQuery === "") setIsSearchOpen(false);
+              }}
+            />
+            <button 
+              onClick={() => { 
+                setIsSearchOpen(false); 
+                setSearchQuery(""); 
+              }}
+              className="p-1 hover:bg-gray-100 rounded-full text-gray-400"
+            >
+              <X size={16} />
+            </button>
           </div>
-          <span className="font-bold text-gray-800 tracking-tight">Task Group List</span>
-        </div>        <div className="flex space-x-1 relative">
-          <button className="p-1.5 hover:bg-gray-100 rounded text-gray-500">
-            <Search size={16}/>
-          </button>
-          <button className="p-1.5 hover:bg-gray-100 rounded text-gray-500">
-            <Plus size={16}/>
-          </button>
-          <button 
-            onClick={() => setIsFilterOpen(!isFilterOpen)}
-            className="p-1.5 hover:bg-gray-100 rounded text-gray-500 relative"
-          >
-            <Filter size={16}/>
-          </button>
-          <FilterPopover 
-            type="group" 
-            isOpen={isFilterOpen} 
-            onClose={() => setIsFilterOpen(false)} 
-          />
-        </div>
+        ) : (
+          <>
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 rounded-full bg-gray-200 border border-gray-300 overflow-hidden">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User" />
+              </div>
+              <span className="font-bold text-gray-800 tracking-tight">Task Group List</span>
+            </div>
+            <div className="flex space-x-1 relative">
+              <button 
+                onClick={() => setIsSearchOpen(true)}
+                className="p-1.5 hover:bg-gray-100 rounded text-gray-500"
+              >
+                <Search size={16}/>
+              </button>
+              <button className="p-1.5 hover:bg-gray-100 rounded text-gray-500">
+                <Plus size={16}/>
+              </button>
+              <button 
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+                className="p-1.5 hover:bg-gray-100 rounded text-gray-500 relative"
+              >
+                <Filter size={16}/>
+              </button>
+              <FilterPopover 
+                type="group" 
+                isOpen={isFilterOpen} 
+                onClose={() => setIsFilterOpen(false)} 
+              />
+            </div>
+          </>
+        )}
       </div>
       <div className="flex-1 overflow-y-auto p-3 space-y-3">
-        {TASK_GROUPS.map((group) => (
+        {filteredGroups.length > 0 ? (
+          filteredGroups.map((group) => (
           <div 
             key={group.id} 
             className={`p-4 rounded-2xl relative group cursor-pointer transition-all hover:shadow-md ${
@@ -167,10 +208,16 @@ export const TaskGroupList: React.FC = () => {
               <div className="flex items-center space-x-1">
                 <CalendarIcon size={10} />
                 <span>{group.deadline}</span>
-              </div>
-            </div>
+              </div>            </div>
           </div>
-        ))}
+        ))
+        ) : (
+          <div className="flex flex-col items-center justify-center h-48 text-gray-400 text-sm animate-in fade-in duration-300">
+            <Search size={32} className="mb-3 opacity-40" />
+            <p className="font-medium text-gray-600">No matching task groups found</p>
+            <p className="text-xs text-gray-400 mt-1">Try a different search query</p>
+          </div>
+        )}
       </div>
     </section>
   );
