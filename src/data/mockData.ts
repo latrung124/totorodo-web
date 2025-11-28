@@ -47,7 +47,26 @@ export const TIMELINE_TASKS: TimelineTask[] = [
         pomodoros: 2,
         desc: "Learn something about business."
     },
-    { id: 4, title: "Lesson 8", status: "todo", date: "Deadline: 24 Oct, 2025" }
+    {
+        id: 4,
+        title: "Lesson 8",
+        status: "todo",
+        date: "Deadline: 24 Oct, 2025",
+        priority: "Low",
+        pomodoros: 1,
+        desc: "Complete the exercises at the end of the chapter."
+    },
+    { id: 5, title: "Review Chapter 1", status: "done", date: "Finished: 22 Oct, 2025" },
+    {
+        id: 6,
+        title: "Prepare Presentation",
+        status: "todo",
+        date: "Deadline: 25 Oct, 2025",
+        priority: "High",
+        pomodoros: 4,
+        desc: "Gather data and create slides for the monthly review."
+    },
+    { id: 7, title: "Team Meeting", status: "done", date: "Finished: 21 Oct, 2025" }
 ];
 
 export const HISTORY_TASKS: HistoryTask[] = [

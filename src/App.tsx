@@ -9,6 +9,7 @@ import { TASK_GROUPS } from './data/mockData';
 function App() {
   const [currentTab, setCurrentTab] = useState<TabView>('home');
   const [selectedGroupId, setSelectedGroupId] = useState<number>(TASK_GROUPS[0]?.id || 1);
+  const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
 
   return (
     <div className="flex h-screen w-full bg-[#18181b] text-gray-900 font-sans overflow-hidden" style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -39,7 +40,10 @@ function App() {
             <TimerPanel />
 
             {/* Right Panel */}
-            <TasksList />
+            <TasksList
+              selectedTaskId={selectedTaskId}
+              onSelectTask={setSelectedTaskId}
+            />
           </main>
         )}
       </div>
