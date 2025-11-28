@@ -3,10 +3,12 @@ import { Flag, Edit3, Trash2, Play, Pause } from 'lucide-react';
 import { CampfireIllustration, MonsterIcon } from '../shared';
 import type { TimerMode } from '../../types';
 
+import { useTimerStore } from '../../store/useTimerStore';
+
 export const TimerPanel: React.FC = () => {
   const [mode, setMode] = useState<TimerMode>('pomodoro');
   const [timer, setTimer] = useState(25 * 60);
-  const [isActive, setIsActive] = useState(false);
+  const { isActive, setIsActive } = useTimerStore();
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
@@ -22,7 +24,7 @@ export const TimerPanel: React.FC = () => {
       setIsActive(false);
     }
     return () => { if (interval) clearInterval(interval); };
-  }, [isActive, timer]);
+  }, [isActive, timer, setIsActive]);
 
   const switchMode = (newMode: TimerMode) => {
     setMode(newMode);
@@ -40,7 +42,7 @@ export const TimerPanel: React.FC = () => {
             <Flag className="text-gray-800 fill-gray-800" size={24} />
             <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Lesson 7</h1>
             <button className="p-1 text-gray-400 hover:text-gray-600">
-              <Edit3 size={16}/>
+              <Edit3 size={16} />
             </button>
           </div>
           <div className="flex items-center space-x-4 text-gray-600 text-sm">
@@ -64,14 +66,13 @@ export const TimerPanel: React.FC = () => {
       <div className="px-6 pb-4">
         <div className="flex bg-gray-100 p-1 rounded-xl">
           {(['pomodoro', 'short', 'long'] as const).map((m) => (
-            <button 
-              key={m} 
-              onClick={() => switchMode(m)} 
-              className={`flex-1 py-2 text-sm font-semibold rounded-lg capitalize transition-all ${
-                mode === m 
-                  ? 'bg-white text-gray-900 shadow-sm' 
+            <button
+              key={m}
+              onClick={() => switchMode(m)}
+              className={`flex-1 py-2 text-sm font-semibold rounded-lg capitalize transition-all ${mode === m
+                  ? 'bg-white text-gray-900 shadow-sm'
                   : 'text-gray-500 hover:text-gray-700'
-              }`}
+                }`}
             >
               {m === 'short' ? 'Short Break' : m === 'long' ? 'Long Break' : m}
             </button>
@@ -85,8 +86,8 @@ export const TimerPanel: React.FC = () => {
         <div className="text-7xl font-bold text-gray-900 font-mono tracking-tight">
           {formatTime(timer)}
         </div>
-        <button 
-          onClick={() => setIsActive(!isActive)} 
+        <button
+          onClick={() => setIsActive(!isActive)}
           className="bg-[#EF4444] hover:bg-red-600 text-white text-lg font-bold px-12 py-4 rounded-2xl shadow-lg shadow-red-200 transition-all transform active:scale-95 flex items-center space-x-2"
         >
           {isActive ? (
