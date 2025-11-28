@@ -167,16 +167,16 @@ export const TaskGroupList: React.FC<TaskGroupListProps> = ({ selectedGroupId, o
               key={group.id}
               onClick={() => onSelectGroup(group.id)}
               className={`p-4 rounded-2xl relative group cursor-pointer transition-all hover:shadow-md ${selectedGroupId === group.id
-                  ? 'bg-[#27272a] text-white ring-2 ring-black ring-offset-2'
-                  : 'bg-gray-50 text-gray-800 border border-gray-100 hover:bg-white'
+                ? 'bg-[#27272a] text-white ring-2 ring-black ring-offset-2'
+                : 'bg-gray-50 text-gray-800 border border-gray-100 hover:bg-white'
                 }`}
             >
               <div className="flex justify-between items-start mb-2">
                 <span className={`text-[10px] font-semibold px-2 py-1 rounded-full ${group.priority === 'High'
-                    ? 'bg-red-500/20 text-red-500'
-                    : group.priority === 'Medium'
-                      ? 'bg-orange-500/20 text-orange-500'
-                      : 'bg-blue-500/20 text-blue-500'
+                  ? 'bg-red-500/20 text-red-500'
+                  : group.priority === 'Medium'
+                    ? 'bg-orange-500/20 text-orange-500'
+                    : 'bg-blue-500/20 text-blue-500'
                   }`}>
                   {group.priority} Priority
                 </span>
@@ -189,20 +189,31 @@ export const TaskGroupList: React.FC<TaskGroupListProps> = ({ selectedGroupId, o
                 </div>
                 <h3 className="font-bold text-sm leading-tight">{group.title}</h3>
               </div>
-              <p className={`text-xs mb-4 line-clamp-2 ${selectedGroupId === group.id ? 'text-gray-400' : 'text-gray-500'
-                }`}>
-                {group.desc}
-              </p>
+              <div className={selectedGroupId === group.id ? 'block' : 'hidden group-hover:block'}>
+                <p className={`text-xs mb-4 line-clamp-2 ${selectedGroupId === group.id ? 'text-gray-400' : 'text-gray-500'
+                  }`}>
+                  {group.desc}
+                </p>
+              </div>
               <div className="flex space-x-1 mb-2">
-                {[...Array(group.total)].map((_, i) => (
-                  <div
-                    key={i}
-                    className={`h-1.5 flex-1 rounded-full ${i < group.completed
-                        ? 'bg-white'
-                        : (selectedGroupId === group.id ? 'bg-white/20' : 'bg-gray-200')
-                      } ${selectedGroupId !== group.id && i < group.completed ? 'bg-gray-800' : ''}`}
-                  />
-                ))}
+                {[...Array(group.total)].map((_, i) => {
+                  const isCompleted = i < group.completed;
+                  const isSelected = selectedGroupId === group.id;
+                  let barColor;
+
+                  if (isSelected) {
+                    barColor = isCompleted ? 'bg-white' : 'bg-white/20';
+                  } else {
+                    barColor = isCompleted ? 'bg-zinc-800' : 'bg-gray-200';
+                  }
+
+                  return (
+                    <div
+                      key={i}
+                      className={`h-1.5 flex-1 rounded-full ${barColor}`}
+                    />
+                  );
+                })}
               </div>
               <div className="flex justify-between items-center text-[10px] opacity-70">
                 <span>{group.completed}/{group.total} completed</span>
