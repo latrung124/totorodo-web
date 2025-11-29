@@ -7,9 +7,26 @@ interface FilterPopoverProps {
     type: FilterType;
     onClose: () => void;
     isOpen: boolean;
+    sortOption: string;
+    onSortChange: (option: string) => void;
+    filterOptions: {
+        highPriority: boolean;
+        mediumPriority: boolean;
+        lowPriority?: boolean; // Added low priority
+        showDone?: boolean;
+    };
+    onFilterChange: (key: string, checked: boolean) => void;
 }
 
-export const FilterPopover: React.FC<FilterPopoverProps> = ({ type, onClose, isOpen }) => {
+export const FilterPopover: React.FC<FilterPopoverProps> = ({
+    type,
+    onClose,
+    isOpen,
+    sortOption,
+    onSortChange,
+    filterOptions,
+    onFilterChange
+}) => {
     if (!isOpen) return null;
 
     return (
@@ -30,28 +47,70 @@ export const FilterPopover: React.FC<FilterPopoverProps> = ({ type, onClose, isO
                     {type === 'group' ? (
                         <>
                             <label className="flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-50 p-1.5 rounded cursor-pointer">
-                                <input type="radio" name="sort" className="accent-black" defaultChecked /> Priority (High to Low)
+                                <input
+                                    type="radio"
+                                    name="sort"
+                                    className="accent-black"
+                                    checked={sortOption === 'priority'}
+                                    onChange={() => onSortChange('priority')}
+                                /> Priority (High to Low)
                             </label>
                             <label className="flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-50 p-1.5 rounded cursor-pointer">
-                                <input type="radio" name="sort" className="accent-black" /> Deadline (Nearest)
+                                <input
+                                    type="radio"
+                                    name="sort"
+                                    className="accent-black"
+                                    checked={sortOption === 'deadline'}
+                                    onChange={() => onSortChange('deadline')}
+                                /> Deadline (Nearest)
                             </label>
                             <label className="flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-50 p-1.5 rounded cursor-pointer">
-                                <input type="radio" name="sort" className="accent-black" /> Name (A-Z)
+                                <input
+                                    type="radio"
+                                    name="sort"
+                                    className="accent-black"
+                                    checked={sortOption === 'name'}
+                                    onChange={() => onSortChange('name')}
+                                /> Name (A-Z)
                             </label>
                         </>
                     ) : (
                         <>
                             <label className="flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-50 p-1.5 rounded cursor-pointer">
-                                <input type="radio" name="sort" className="accent-black" defaultChecked /> Deadline
+                                <input
+                                    type="radio"
+                                    name="sort"
+                                    className="accent-black"
+                                    checked={sortOption === 'deadline'}
+                                    onChange={() => onSortChange('deadline')}
+                                /> Deadline
                             </label>
                             <label className="flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-50 p-1.5 rounded cursor-pointer">
-                                <input type="radio" name="sort" className="accent-black" /> Priority
+                                <input
+                                    type="radio"
+                                    name="sort"
+                                    className="accent-black"
+                                    checked={sortOption === 'priority'}
+                                    onChange={() => onSortChange('priority')}
+                                /> Priority
                             </label>
                             <label className="flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-50 p-1.5 rounded cursor-pointer">
-                                <input type="radio" name="sort" className="accent-black" /> Name
+                                <input
+                                    type="radio"
+                                    name="sort"
+                                    className="accent-black"
+                                    checked={sortOption === 'name'}
+                                    onChange={() => onSortChange('name')}
+                                /> Name
                             </label>
                             <label className="flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-50 p-1.5 rounded cursor-pointer">
-                                <input type="radio" name="sort" className="accent-black" /> Pomodoros
+                                <input
+                                    type="radio"
+                                    name="sort"
+                                    className="accent-black"
+                                    checked={sortOption === 'pomodoros'}
+                                    onChange={() => onSortChange('pomodoros')}
+                                /> Pomodoros
                             </label>
                         </>
                     )}
@@ -63,22 +122,41 @@ export const FilterPopover: React.FC<FilterPopoverProps> = ({ type, onClose, isO
                 <p className="text-[10px] uppercase font-bold text-gray-400 mb-2 tracking-wider">Filter By</p>
                 <div className="space-y-1">
                     <label className="flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-50 p-1.5 rounded cursor-pointer">
-                        <input type="checkbox" className="accent-black rounded" defaultChecked /> High Priority
+                        <input
+                            type="checkbox"
+                            className="accent-black rounded"
+                            checked={filterOptions.highPriority}
+                            onChange={(e) => onFilterChange('highPriority', e.target.checked)}
+                        /> High Priority
                     </label>
                     <label className="flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-50 p-1.5 rounded cursor-pointer">
-                        <input type="checkbox" className="accent-black rounded" defaultChecked /> Medium Priority
+                        <input
+                            type="checkbox"
+                            className="accent-black rounded"
+                            checked={filterOptions.mediumPriority}
+                            onChange={(e) => onFilterChange('mediumPriority', e.target.checked)}
+                        /> Medium Priority
+                    </label>
+                    <label className="flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-50 p-1.5 rounded cursor-pointer">
+                        <input
+                            type="checkbox"
+                            className="accent-black rounded"
+                            checked={filterOptions.lowPriority}
+                            onChange={(e) => onFilterChange('lowPriority', e.target.checked)}
+                        /> Low Priority
                     </label>
                     {type === 'task' && (
                         <label className="flex items-center gap-2 text-sm text-gray-700 hover:bg-gray-50 p-1.5 rounded cursor-pointer">
-                            <input type="checkbox" className="accent-black rounded" /> Show Done Tasks
+                            <input
+                                type="checkbox"
+                                className="accent-black rounded"
+                                checked={filterOptions.showDone}
+                                onChange={(e) => onFilterChange('showDone', e.target.checked)}
+                            /> Show Done Tasks
                         </label>
                     )}
                 </div>
             </div>
-
-            <button className="w-full mt-4 bg-black text-white text-xs font-bold py-2 rounded-lg hover:bg-gray-800 transition-colors">
-                Apply
-            </button>
         </div>
     );
 };
