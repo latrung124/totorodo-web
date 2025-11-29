@@ -11,26 +11,11 @@ export const StackedBarChart: React.FC = () => {
     <div className="space-y-4">
       {data.map((item, i) => (
         <div key={i}>
-          <div className="flex justify-between text-xs mb-1 text-gray-600 font-medium">
-            <span>{item.label}</span>
-            <span>{item.p + item.s + item.l} mins</span>
-          </div>
+          <div className="flex justify-between text-xs mb-1 text-gray-600 font-medium"><span>{item.label}</span><span>{item.p + item.s + item.l} mins</span></div>
           <div className="h-3 w-full bg-gray-100 rounded-full flex overflow-hidden">
-            <div 
-              style={{ width: `${item.p}%` }} 
-              className="bg-indigo-500" 
-              title="Focus"
-            />
-            <div 
-              style={{ width: `${item.s}%` }} 
-              className="bg-blue-400" 
-              title="Short Break"
-            />
-            <div 
-              style={{ width: `${item.l}%` }} 
-              className="bg-teal-300" 
-              title="Long Break"
-            />
+            <div style={{ width: `${item.p}%` }} className="bg-orange-600" title="Focus"></div>
+            <div style={{ width: `${item.s}%` }} className="bg-orange-400" title="Short Break"></div>
+            <div style={{ width: `${item.l}%` }} className="bg-gray-800" title="Long Break"></div>
           </div>
         </div>
       ))}
