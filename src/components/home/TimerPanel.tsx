@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Flag, Edit3, Trash2, Play, Pause } from 'lucide-react';
-import { CampfireIllustration, MonsterIcon } from '../shared';
+import { Flag, Edit3, Trash2, Play, Pause, Maximize2, Minimize2 } from 'lucide-react';
+import { CampfireIllustration, MonsterIcon, GiveUpModal } from '../shared';
 import type { TimerMode } from '../../types';
 
 import { useTimerStore } from '../../store/useTimerStore';
@@ -9,6 +9,7 @@ export const TimerPanel: React.FC = () => {
   const [mode, setMode] = useState<TimerMode>('pomodoro');
   const [timer, setTimer] = useState(25 * 60);
   const { isActive, setIsActive } = useTimerStore();
+  const [giveUpModalOpen, setGiveUpModalOpen] = useState(false);
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
@@ -34,8 +35,30 @@ export const TimerPanel: React.FC = () => {
     if (newMode === 'long') setTimer(15 * 60);
   };
 
+  const handleGiveUp = () => {
+    if (mode === 'pomodoro') {
+      setGiveUpModalOpen(true);
+    } else {
+      // Instant reset for breaks
+      setIsActive(false);
+      if (mode === 'short') setTimer(5 * 60);
+      if (mode === 'long') setTimer(15 * 60);
+    }
+  };
+
+  const confirmGiveUp = () => {
+    setIsActive(false);
+    setTimer(25 * 60);
+    setGiveUpModalOpen(false);
+  };
+
   return (
     <section className="flex-1 bg-white rounded-2xl shadow-sm flex flex-col relative">
+      <GiveUpModal
+        isOpen={giveUpModalOpen}
+        onClose={() => setGiveUpModalOpen(false)}
+        onConfirm={confirmGiveUp}
+      />
       <div className="p-6 flex justify-between items-start">
         <div>
           <div className="flex items-center space-x-3 mb-2">
@@ -59,9 +82,18 @@ export const TimerPanel: React.FC = () => {
           </div>
           <p className="text-gray-400 text-sm mt-2">Learn something about technology.</p>
         </div>
-        <button className="p-2 text-gray-400 hover:text-red-500 transition-colors">
-          <Trash2 size={20} />
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setIsActive(!isActive)}
+            className="p-2 text-gray-400 hover:text-black transition-colors"
+            title={isActive ? "Exit Focus Mode" : "Enter Focus Mode"}
+          >
+            {isActive ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
+          </button>
+          <button className="p-2 text-gray-400 hover:text-red-500 transition-colors">
+            <Trash2 size={20} />
+          </button>
+        </div>
       </div>
       <div className="px-6 pb-4">
         <div className="flex bg-gray-100 p-1 rounded-xl">
@@ -70,8 +102,8 @@ export const TimerPanel: React.FC = () => {
               key={m}
               onClick={() => switchMode(m)}
               className={`flex-1 py-2 text-sm font-semibold rounded-lg capitalize transition-all ${mode === m
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
                 }`}
             >
               {m === 'short' ? 'Short Break' : m === 'long' ? 'Long Break' : m}
@@ -102,7 +134,7 @@ export const TimerPanel: React.FC = () => {
             </>
           )}
         </button>
-        <button className="text-gray-400 hover:text-gray-600 text-sm font-medium">
+        <button onClick={handleGiveUp} className="text-gray-400 hover:text-gray-600 text-sm font-medium">
           Give up
         </button>
       </div>
