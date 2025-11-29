@@ -1,6 +1,21 @@
 import React from 'react';
 import { Flag, Edit3, Layers } from 'lucide-react';
-import type { TaskGroup, TimelineTask, HistoryTask, FaqItem, LanguageItem } from '../types';
+import type { TaskGroup, TimelineTask, HistoryTask, FaqItem, LanguageItem, CalendarTask } from '../types';
+
+export const CALENDAR_TASKS: CalendarTask[] = [
+    { id: 101, title: "Review Chapter 1", date: 5, priority: "High", status: "done", pomodoros: 2, completedPomodoros: 2 },
+    { id: 102, title: "Math Assignment", date: 12, priority: "Medium", status: "todo", pomodoros: 4, completedPomodoros: 0 },
+    { id: 103, title: "Design Mockups", date: 12, priority: "High", status: "current", pomodoros: 6, completedPomodoros: 3 },
+    { id: 104, title: "Team Meeting", date: 15, priority: "Low", status: "todo", pomodoros: 1, completedPomodoros: 0 },
+    { id: 105, title: "Submit Report", date: 24, priority: "High", status: "todo", pomodoros: 3, completedPomodoros: 0 },
+    { id: 106, title: "Email Client", date: 24, priority: "Low", status: "todo", pomodoros: 1, completedPomodoros: 0 },
+];
+
+export const UNSCHEDULED_TASKS = [
+    { id: 201, title: "Clean Workspace", priority: "Low" },
+    { id: 202, title: "Read Documentation", priority: "Medium" },
+    { id: 203, title: "Update Portfolio", priority: "High" },
+];
 
 export const TASK_GROUPS: TaskGroup[] = [
     {

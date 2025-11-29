@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Flag, Edit3, Trash2, Play, Pause, Maximize2, Minimize2 } from 'lucide-react';
-import { CampfireIllustration, MonsterIcon, GiveUpModal } from '../shared';
+import { CampfireIllustration, MonsterIcon, GiveUpModal, SwitchModeModal } from '../shared';
 import type { TimerMode } from '../../types';
 
 import { useTimerStore } from '../../store/useTimerStore';
@@ -10,6 +10,8 @@ export const TimerPanel: React.FC = () => {
   const [timer, setTimer] = useState(25 * 60);
   const { isActive, setIsActive } = useTimerStore();
   const [giveUpModalOpen, setGiveUpModalOpen] = useState(false);
+  const [switchModalOpen, setSwitchModalOpen] = useState(false);
+  const [pendingMode, setPendingMode] = useState<TimerMode | null>(null);
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
@@ -27,12 +29,37 @@ export const TimerPanel: React.FC = () => {
     return () => { if (interval) clearInterval(interval); };
   }, [isActive, timer, setIsActive]);
 
+  const getInitialTime = (m: TimerMode) => {
+    if (m === 'pomodoro') return 25 * 60;
+    if (m === 'short') return 5 * 60;
+    if (m === 'long') return 15 * 60;
+    return 25 * 60;
+  };
+
   const switchMode = (newMode: TimerMode) => {
-    setMode(newMode);
-    setIsActive(false);
-    if (newMode === 'pomodoro') setTimer(25 * 60);
-    if (newMode === 'short') setTimer(5 * 60);
-    if (newMode === 'long') setTimer(15 * 60);
+    if (mode === newMode) return;
+
+    const initialTime = getInitialTime(mode);
+    const isDirty = timer !== initialTime;
+
+    if (isDirty) {
+      setPendingMode(newMode);
+      setSwitchModalOpen(true);
+    } else {
+      setMode(newMode);
+      // Preserve isActive state
+      setTimer(getInitialTime(newMode));
+    }
+  };
+
+  const confirmSwitchMode = () => {
+    if (pendingMode) {
+      setMode(pendingMode);
+      // Preserve isActive state
+      setTimer(getInitialTime(pendingMode));
+      setPendingMode(null);
+    }
+    setSwitchModalOpen(false);
   };
 
   const handleGiveUp = () => {
@@ -41,14 +68,13 @@ export const TimerPanel: React.FC = () => {
     } else {
       // Instant reset for breaks
       setIsActive(false);
-      if (mode === 'short') setTimer(5 * 60);
-      if (mode === 'long') setTimer(15 * 60);
+      setTimer(getInitialTime(mode));
     }
   };
 
   const confirmGiveUp = () => {
     setIsActive(false);
-    setTimer(25 * 60);
+    setTimer(getInitialTime(mode));
     setGiveUpModalOpen(false);
   };
 
@@ -58,6 +84,14 @@ export const TimerPanel: React.FC = () => {
         isOpen={giveUpModalOpen}
         onClose={() => setGiveUpModalOpen(false)}
         onConfirm={confirmGiveUp}
+      />
+      <SwitchModeModal
+        isOpen={switchModalOpen}
+        onClose={() => {
+          setSwitchModalOpen(false);
+          setPendingMode(null);
+        }}
+        onConfirm={confirmSwitchMode}
       />
       <div className="p-6 flex justify-between items-start">
         <div>

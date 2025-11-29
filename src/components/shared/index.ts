@@ -4,3 +4,4 @@ export * from './SettingsCard';
 export * from './CreateModal';
 export * from './FilterPopover';
 export * from './GiveUpModal';
+export * from './SwitchModeModal';

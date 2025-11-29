@@ -3,9 +3,10 @@ import type { ReactNode } from 'react';
 export type Priority = 'High' | 'Medium' | 'Low';
 export type ThemeMode = 'light' | 'dark';
 export type TimerMode = 'pomodoro' | 'short' | 'long';
-export type TabView = 'home' | 'stats' | 'settings' | 'help';
+export type TabView = 'home' | 'calendar' | 'stats' | 'settings' | 'help';
 export type TaskStatus = 'done' | 'current' | 'todo';
 export type HistoryStatus = 'done' | 'late';
+export type CalendarViewType = 'month' | 'week' | 'day';
 
 export interface TaskGroup {
   id: number;
@@ -26,6 +27,16 @@ export interface TimelineTask {
   priority?: Priority;
   pomodoros?: number;
   desc?: string;
+}
+
+export interface CalendarTask {
+  id: number;
+  title: string;
+  date: number; // Day of the month for simplicity
+  priority: Priority;
+  status: TaskStatus;
+  pomodoros: number;
+  completedPomodoros: number;
 }
 
 export interface HistoryTask {

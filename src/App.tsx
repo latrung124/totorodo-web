@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Sidebar, Header } from './layouts';
-import { StatisticsView, SettingsView, HelpView } from './components/views';
+import { StatisticsView, SettingsView, HelpView, CalendarView } from './components/views';
 import { TaskGroupList, TimerPanel, TasksList } from './components/home';
 import { CreateModal } from './components/shared';
 import type { TabView } from './types';
@@ -59,6 +59,8 @@ function App() {
 
         {currentTab === 'stats' ? (
           <StatisticsView />
+        ) : currentTab === 'calendar' ? (
+          <CalendarView />
         ) : currentTab === 'settings' ? (
           <SettingsView />
         ) : currentTab === 'help' ? (
