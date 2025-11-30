@@ -51,8 +51,8 @@ export const TASK_GROUPS: TaskGroup[] = [
 ];
 
 export const TIMELINE_TASKS: TimelineTask[] = [
-    { id: 1, title: "Lesson 5", status: "done", date: "Finished: 23 Oct, 2025" },
-    { id: 2, title: "Lesson 6", status: "done", date: "Finished: 23 Oct, 2025" },
+    { id: 1, title: "Lesson 5", status: "done", date: "Finished: 23 Oct, 2025", groupId: 1 },
+    { id: 2, title: "Lesson 6", status: "done", date: "Finished: 23 Oct, 2025", groupId: 1 },
     {
         id: 3,
         title: "Lesson 7",
@@ -60,7 +60,8 @@ export const TIMELINE_TASKS: TimelineTask[] = [
         date: "Deadline: 24 Oct, 2025",
         priority: "Medium",
         pomodoros: 2,
-        desc: "Learn something about business."
+        desc: "Learn something about business.",
+        groupId: 1
     },
     {
         id: 4,
@@ -69,9 +70,10 @@ export const TIMELINE_TASKS: TimelineTask[] = [
         date: "Deadline: 24 Oct, 2025",
         priority: "Low",
         pomodoros: 1,
-        desc: "Complete the exercises at the end of the chapter."
+        desc: "Complete the exercises at the end of the chapter.",
+        groupId: 1
     },
-    { id: 5, title: "Review Chapter 1", status: "done", date: "Finished: 22 Oct, 2025" },
+    { id: 5, title: "Review Chapter 1", status: "done", date: "Finished: 22 Oct, 2025", groupId: 2 },
     {
         id: 6,
         title: "Prepare Presentation",
@@ -79,9 +81,10 @@ export const TIMELINE_TASKS: TimelineTask[] = [
         date: "Deadline: 25 Oct, 2025",
         priority: "High",
         pomodoros: 4,
-        desc: "Gather data and create slides for the monthly review."
+        desc: "Gather data and create slides for the monthly review.",
+        groupId: 2
     },
-    { id: 7, title: "Team Meeting", status: "done", date: "Finished: 21 Oct, 2025" }
+    { id: 7, title: "Team Meeting", status: "done", date: "Finished: 21 Oct, 2025", groupId: 2 }
 ];
 
 export const HISTORY_TASKS: HistoryTask[] = [

@@ -15,7 +15,7 @@ export const TaskGroupList: React.FC<TaskGroupListProps> = ({ selectedGroupId, o
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const { taskGroups } = useTaskStore();
+  const { taskGroups, tasks } = useTaskStore();
 
   // Sort & Filter State
   const [sortOption, setSortOption] = useState('priority');
@@ -126,73 +126,80 @@ export const TaskGroupList: React.FC<TaskGroupListProps> = ({ selectedGroupId, o
       <div className="flex-1 overflow-y-auto p-3 space-y-3">
         <AnimatePresence mode='popLayout'>
           {filteredGroups.length > 0 ? (
-            filteredGroups.map((group) => (
-              <motion.div
-                layout
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.2 }}
-                key={group.id}
-                onClick={() => onSelectGroup(group.id)}
-                className={`p-4 rounded-2xl relative group cursor-pointer transition-shadow hover:shadow-md ${selectedGroupId === group.id
-                  ? 'bg-[#27272a] text-white ring-2 ring-black ring-offset-2'
-                  : 'bg-gray-50 text-gray-800 border border-gray-100 hover:bg-white'
-                  }`}
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <span className={`text-[10px] font-semibold px-2 py-1 rounded-full ${group.priority === 'High'
-                    ? 'bg-red-500/20 text-red-500'
-                    : group.priority === 'Medium'
-                      ? 'bg-orange-500/20 text-orange-500'
-                      : 'bg-blue-500/20 text-blue-500'
-                    }`}>
-                    {group.priority} Priority
-                  </span>
-                  <MoreHorizontal size={16} className="text-gray-400" />
-                </div>
-                <div className="flex items-center space-x-2 mb-2">
-                  <div className={`p-1.5 rounded-lg ${selectedGroupId === group.id ? 'bg-white/10' : 'bg-white border border-gray-200'
-                    }`}>
-                    <Flag size={14} />
-                  </div>
-                  <h3 className="font-bold text-sm leading-tight">{group.title}</h3>
-                </div>
-                <div className={selectedGroupId === group.id ? 'block' : 'hidden group-hover:block'}>
-                  <p className={`text-xs mb-4 line-clamp-2 ${selectedGroupId === group.id ? 'text-gray-400' : 'text-gray-500'
-                    }`}>
-                    {group.desc}
-                  </p>
-                </div>
-                <div className="flex space-x-1 mb-2">
-                  {[...Array(group.total)].map((_, i) => {
-                    const isCompleted = i < group.completed;
-                    const isSelected = selectedGroupId === group.id;
-                    let barColor;
+            filteredGroups.map((group) => {
+              // Calculate progress dynamically
+              const groupTasks = tasks.filter(t => t.groupId === group.id);
+              const totalTasks = groupTasks.length;
+              const completedTasks = groupTasks.filter(t => t.status === 'done').length;
 
-                    if (isSelected) {
-                      barColor = isCompleted ? 'bg-white' : 'bg-white/20';
-                    } else {
-                      barColor = isCompleted ? 'bg-zinc-800' : 'bg-gray-200';
-                    }
-
-                    return (
-                      <div
-                        key={i}
-                        className={`h-1.5 flex-1 rounded-full ${barColor}`}
-                      />
-                    );
-                  })}
-                </div>
-                <div className="flex justify-between items-center text-[10px] opacity-70">
-                  <span>{group.completed}/{group.total} completed</span>
-                  <div className="flex items-center space-x-1">
-                    <CalendarIcon size={10} />
-                    <span>{group.deadline}</span>
+              return (
+                <motion.div
+                  layout
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                  key={group.id}
+                  onClick={() => onSelectGroup(group.id)}
+                  className={`p-4 rounded-2xl relative group cursor-pointer transition-shadow hover:shadow-md ${selectedGroupId === group.id
+                    ? 'bg-[#27272a] text-white ring-2 ring-black ring-offset-2'
+                    : 'bg-gray-50 text-gray-800 border border-gray-100 hover:bg-white'
+                    }`}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <span className={`text-[10px] font-semibold px-2 py-1 rounded-full ${group.priority === 'High'
+                      ? 'bg-red-500/20 text-red-500'
+                      : group.priority === 'Medium'
+                        ? 'bg-orange-500/20 text-orange-500'
+                        : 'bg-blue-500/20 text-blue-500'
+                      }`}>
+                      {group.priority} Priority
+                    </span>
+                    <MoreHorizontal size={16} className="text-gray-400" />
                   </div>
-                </div>
-              </motion.div>
-            ))
+                  <div className="flex items-center space-x-2 mb-2">
+                    <div className={`p-1.5 rounded-lg ${selectedGroupId === group.id ? 'bg-white/10' : 'bg-white border border-gray-200'
+                      }`}>
+                      <Flag size={14} />
+                    </div>
+                    <h3 className="font-bold text-sm leading-tight">{group.title}</h3>
+                  </div>
+                  <div className={selectedGroupId === group.id ? 'block' : 'hidden group-hover:block'}>
+                    <p className={`text-xs mb-4 line-clamp-2 ${selectedGroupId === group.id ? 'text-gray-400' : 'text-gray-500'
+                      }`}>
+                      {group.desc}
+                    </p>
+                  </div>
+                  <div className="flex space-x-1 mb-2">
+                    {[...Array(totalTasks)].map((_, i) => {
+                      const isCompleted = i < completedTasks;
+                      const isSelected = selectedGroupId === group.id;
+                      let barColor;
+
+                      if (isSelected) {
+                        barColor = isCompleted ? 'bg-white' : 'bg-white/20';
+                      } else {
+                        barColor = isCompleted ? 'bg-zinc-800' : 'bg-gray-200';
+                      }
+
+                      return (
+                        <div
+                          key={i}
+                          className={`h-1.5 flex-1 rounded-full ${barColor}`}
+                        />
+                      );
+                    })}
+                  </div>
+                  <div className="flex justify-between items-center text-[10px] opacity-70">
+                    <span>{completedTasks}/{totalTasks} completed</span>
+                    <div className="flex items-center space-x-1">
+                      <CalendarIcon size={10} />
+                      <span>{group.deadline}</span>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })
           ) : (
             <motion.div
               initial={{ opacity: 0 }}

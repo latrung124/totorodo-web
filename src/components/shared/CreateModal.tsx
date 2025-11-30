@@ -8,9 +8,10 @@ interface CreateModalProps {
     type: 'group' | 'task';
     isOpen: boolean;
     onClose: () => void;
+    selectedGroupId?: number;
 }
 
-export const CreateModal: React.FC<CreateModalProps> = ({ type, isOpen, onClose }) => {
+export const CreateModal: React.FC<CreateModalProps> = ({ type, isOpen, onClose, selectedGroupId }) => {
     if (!isOpen) return null;
 
     // Form State
@@ -37,13 +38,15 @@ export const CreateModal: React.FC<CreateModalProps> = ({ type, isOpen, onClose 
                 total: 0
             });
         } else {
+            if (!selectedGroupId) return alert('No group selected');
             await addTask({
                 title: name,
                 desc,
                 priority,
                 date: deadline ? `Deadline: ${deadline}` : '',
                 status: 'todo',
-                pomodoros
+                pomodoros,
+                groupId: selectedGroupId
             });
         }
 

@@ -46,6 +46,7 @@ function App() {
         isOpen={createModalOpen}
         type={createModalType}
         onClose={() => setCreateModalOpen(false)}
+        selectedGroupId={selectedGroupId}
       />
 
       {/* Sidebar */}
@@ -83,6 +84,7 @@ function App() {
             <div className={`transition-all duration-500 ease-in-out ${isActive ? 'w-0 opacity-0 overflow-hidden' : 'w-80 opacity-100'}`}>
               <TasksList
                 selectedTaskId={selectedTaskId}
+                selectedGroupId={selectedGroupId}
                 onSelectTask={setSelectedTaskId}
                 onOpenCreateTask={() => openCreateModal('task')}
               />

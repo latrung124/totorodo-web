@@ -27,6 +27,7 @@ export interface TimelineTask {
   priority?: Priority;
   pomodoros?: number;
   desc?: string;
+  groupId: number;
 }
 
 export interface CalendarTask {

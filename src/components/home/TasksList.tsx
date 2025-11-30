@@ -8,11 +8,12 @@ import { FilterPopover } from '../shared';
 
 interface TasksListProps {
   selectedTaskId: number | null;
+  selectedGroupId: number;
   onSelectTask: (id: number) => void;
   onOpenCreateTask: () => void;
 }
 
-export const TasksList: React.FC<TasksListProps> = ({ selectedTaskId, onSelectTask, onOpenCreateTask }) => {
+export const TasksList: React.FC<TasksListProps> = ({ selectedTaskId, selectedGroupId, onSelectTask, onOpenCreateTask }) => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const { tasks } = useTaskStore();
 
@@ -31,6 +32,9 @@ export const TasksList: React.FC<TasksListProps> = ({ selectedTaskId, onSelectTa
 
   const filteredTasks = tasks
     .filter(task => {
+      // Filter by group first
+      if (task.groupId !== selectedGroupId) return false;
+
       const matchesStatus = filterOptions.showDone ? true : task.status !== 'done';
       const matchesPriority =
         (filterOptions.highPriority && task.priority === 'High') ||
@@ -60,8 +64,9 @@ export const TasksList: React.FC<TasksListProps> = ({ selectedTaskId, onSelectTa
       return 0;
     });
 
-  const completedCount = tasks.filter(t => t.status === 'done').length;
-  const leftCount = tasks.filter(t => t.status !== 'done').length;
+  const groupTasks = tasks.filter(t => t.groupId === selectedGroupId);
+  const completedCount = groupTasks.filter(t => t.status === 'done').length;
+  const leftCount = groupTasks.filter(t => t.status !== 'done').length;
 
   return (
     <section className="w-80 bg-white rounded-2xl shadow-sm flex flex-col">
