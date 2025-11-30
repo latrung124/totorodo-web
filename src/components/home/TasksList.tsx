@@ -23,7 +23,7 @@ export const TasksList: React.FC<TasksListProps> = ({ selectedTaskId, selectedGr
     highPriority: true,
     mediumPriority: true,
     lowPriority: true,
-    showDone: false,
+    showDone: true, // Default to true
   });
 
   const handleFilterChange = (key: string, checked: boolean) => {
@@ -65,8 +65,20 @@ export const TasksList: React.FC<TasksListProps> = ({ selectedTaskId, selectedGr
     });
 
   const groupTasks = tasks.filter(t => t.groupId === selectedGroupId);
-  const completedCount = groupTasks.filter(t => t.status === 'done').length;
-  const leftCount = groupTasks.filter(t => t.status !== 'done').length;
+  const selectedTask = tasks.find(t => t.id === selectedTaskId);
+
+  let completedCount = 0;
+  let leftCount = 0;
+
+  if (selectedTask) {
+    completedCount = selectedTask.completedPomodoros || 0;
+    leftCount = (selectedTask.pomodoros || 0) - completedCount;
+    // Ensure non-negative
+    if (leftCount < 0) leftCount = 0;
+  } else {
+    completedCount = groupTasks.filter(t => t.status === 'done').length;
+    leftCount = groupTasks.filter(t => t.status !== 'done').length;
+  }
 
   return (
     <section className="w-80 bg-white rounded-2xl shadow-sm flex flex-col">

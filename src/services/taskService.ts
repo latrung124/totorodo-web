@@ -2,8 +2,8 @@ import type { TaskGroup, TimelineTask } from '../types';
 import { TASK_GROUPS, TIMELINE_TASKS } from '../data/mockData';
 
 const STORAGE_KEYS = {
-    GROUPS: 'totorodo_groups',
-    TASKS: 'totorodo_tasks',
+    GROUPS: 'totorodo_groups_v4',
+    TASKS: 'totorodo_tasks_v4',
 };
 
 // Helper to simulate async delay
@@ -54,10 +54,20 @@ export const taskService = {
         const newTask: TimelineTask = {
             ...task,
             id: Date.now(),
+            completedPomodoros: 0
         };
 
         const updatedTasks = [...tasks, newTask];
         localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(updatedTasks));
         return newTask;
+    },
+
+    updateTask: async (task: TimelineTask): Promise<void> => {
+        await delay(100);
+        const stored = localStorage.getItem(STORAGE_KEYS.TASKS);
+        const tasks: TimelineTask[] = stored ? JSON.parse(stored) : TIMELINE_TASKS;
+
+        const updatedTasks = tasks.map(t => t.id === task.id ? task : t);
+        localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(updatedTasks));
     }
 };

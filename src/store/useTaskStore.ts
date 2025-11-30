@@ -13,9 +13,10 @@ interface TaskState {
 
     fetchTasks: () => Promise<void>;
     addTask: (task: Omit<TimelineTask, 'id'>) => Promise<void>;
+    incrementTaskPomodoro: (taskId: number) => Promise<void>;
 }
 
-export const useTaskStore = create<TaskState>((set) => ({
+export const useTaskStore = create<TaskState>((set, get) => ({
     taskGroups: [],
     tasks: [],
     isLoading: false,
@@ -66,4 +67,29 @@ export const useTaskStore = create<TaskState>((set) => ({
             set({ error: 'Failed to create task', isLoading: false });
         }
     },
+
+    incrementTaskPomodoro: async (taskId) => {
+        const { tasks } = get();
+        const task = tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        const updatedTask = { ...task };
+        updatedTask.completedPomodoros = (updatedTask.completedPomodoros || 0) + 1;
+
+        if (updatedTask.pomodoros && updatedTask.completedPomodoros >= updatedTask.pomodoros) {
+            updatedTask.status = 'done';
+        }
+
+        // Optimistic update
+        set((state) => ({
+            tasks: state.tasks.map(t => t.id === taskId ? updatedTask : t)
+        }));
+
+        try {
+            await taskService.updateTask(updatedTask);
+        } catch (error) {
+            // Revert on failure (omitted for simplicity, but good practice)
+            console.error('Failed to update task', error);
+        }
+    }
 }));

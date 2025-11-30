@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Sidebar, Header } from './layouts';
 import { StatisticsView, SettingsView, HelpView, CalendarView } from './components/views';
 import { TaskGroupList, TimerPanel, TasksList } from './components/home';
@@ -6,12 +6,10 @@ import { CreateModal } from './components/shared';
 import type { TabView } from './types';
 import { useTimerStore } from './store/useTimerStore';
 import { useTaskStore } from './store/useTaskStore';
-import { useEffect } from 'react';
-
 
 function App() {
   const [currentTab, setCurrentTab] = useState<TabView>('home');
-  const { taskGroups, fetchTaskGroups, fetchTasks } = useTaskStore();
+  const { taskGroups, fetchTaskGroups, fetchTasks, tasks } = useTaskStore();
   const [selectedGroupId, setSelectedGroupId] = useState<number>(1);
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
   const isActive = useTimerStore((state) => state.isActive);
@@ -72,13 +70,18 @@ function App() {
             <div className={`transition-all duration-500 ease-in-out ${isActive ? 'w-0 opacity-0 overflow-hidden' : 'w-80 opacity-100'}`}>
               <TaskGroupList
                 selectedGroupId={selectedGroupId}
-                onSelectGroup={setSelectedGroupId}
+                onSelectGroup={(id) => {
+                  setSelectedGroupId(id);
+                  const groupTasks = tasks.filter(t => t.groupId === id);
+                  const currentTask = groupTasks.find(t => t.status === 'current') || groupTasks.find(t => t.status === 'todo');
+                  setSelectedTaskId(currentTask ? currentTask.id : null);
+                }}
                 onOpenCreateGroup={() => openCreateModal('group')}
               />
             </div>
 
             {/* Center Panel */}
-            <TimerPanel />
+            <TimerPanel selectedTaskId={selectedTaskId} />
 
             {/* Right Panel */}
             <div className={`transition-all duration-500 ease-in-out ${isActive ? 'w-0 opacity-0 overflow-hidden' : 'w-80 opacity-100'}`}>

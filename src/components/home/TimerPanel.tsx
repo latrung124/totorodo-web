@@ -3,15 +3,23 @@ import { Flag, Edit3, Trash2, Play, Pause, Maximize2, Minimize2 } from 'lucide-r
 import { CampfireIllustration, MonsterIcon, GiveUpModal, SwitchModeModal } from '../shared';
 import type { TimerMode } from '../../types';
 
+import { useTaskStore } from '../../store/useTaskStore';
 import { useTimerStore } from '../../store/useTimerStore';
 
-export const TimerPanel: React.FC = () => {
+interface TimerPanelProps {
+  selectedTaskId: number | null;
+}
+
+export const TimerPanel: React.FC<TimerPanelProps> = ({ selectedTaskId }) => {
   const [mode, setMode] = useState<TimerMode>('pomodoro');
   const [timer, setTimer] = useState(25 * 60);
   const { isActive, setIsActive } = useTimerStore();
+  const { tasks, incrementTaskPomodoro } = useTaskStore();
   const [giveUpModalOpen, setGiveUpModalOpen] = useState(false);
   const [switchModalOpen, setSwitchModalOpen] = useState(false);
   const [pendingMode, setPendingMode] = useState<TimerMode | null>(null);
+
+  const selectedTask = tasks.find(t => t.id === selectedTaskId);
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
@@ -23,11 +31,14 @@ export const TimerPanel: React.FC = () => {
     let interval: number | null = null;
     if (isActive && timer > 0) {
       interval = window.setInterval(() => setTimer(t => t - 1), 1000);
-    } else if (timer === 0) {
+    } else if (isActive && timer === 0) {
       setIsActive(false);
+      if (mode === 'pomodoro' && selectedTaskId) {
+        incrementTaskPomodoro(selectedTaskId);
+      }
     }
     return () => { if (interval) clearInterval(interval); };
-  }, [isActive, timer, setIsActive]);
+  }, [isActive, timer, setIsActive, mode, selectedTaskId, incrementTaskPomodoro]);
 
   const getInitialTime = (m: TimerMode) => {
     if (m === 'pomodoro') return 25 * 60;
@@ -95,26 +106,36 @@ export const TimerPanel: React.FC = () => {
       />
       <div className="p-6 flex justify-between items-start">
         <div>
-          <div className="flex items-center space-x-3 mb-2">
-            <Flag className="text-gray-800 fill-gray-800" size={24} />
-            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Lesson 7</h1>
-            <button className="p-1 text-gray-400 hover:text-gray-600">
-              <Edit3 size={16} />
-            </button>
-          </div>
-          <div className="flex items-center space-x-4 text-gray-600 text-sm">
-            <div className="flex items-center space-x-1">
-              <span className="font-mono font-medium">04:24:14</span>
+          {selectedTask ? (
+            <>
+              <div className="flex items-center space-x-3 mb-2">
+                <Flag className="text-gray-800 fill-gray-800" size={24} />
+                <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{selectedTask.title}</h1>
+                <button className="p-1 text-gray-400 hover:text-gray-600">
+                  <Edit3 size={16} />
+                </button>
+              </div>
+              <div className="flex items-center space-x-4 text-gray-600 text-sm">
+                <div className="flex items-center space-x-1">
+                  <span className="font-mono font-medium">
+                    {selectedTask.completedPomodoros || 0}/{selectedTask.pomodoros || 1} Pomodoros
+                  </span>
+                </div>
+                <span className="text-gray-300">•</span>
+                <div className="flex space-x-1">
+                  {[...Array(selectedTask.pomodoros || 1)].map((_, i) => (
+                    <MonsterIcon key={i} active={i < (selectedTask.completedPomodoros || 0)} />
+                  ))}
+                </div>
+              </div>
+              <p className="text-gray-400 text-sm mt-2">{selectedTask.desc}</p>
+            </>
+          ) : (
+            <div className="flex flex-col justify-center h-full">
+              <h1 className="text-2xl font-bold text-gray-400 tracking-tight">No Task Selected</h1>
+              <p className="text-gray-400 text-sm mt-2">Select a task to start focusing.</p>
             </div>
-            <span className="text-gray-300">•</span>
-            <div className="flex space-x-1">
-              <MonsterIcon active={true} />
-              <MonsterIcon active={true} />
-              <MonsterIcon active={false} />
-              <MonsterIcon active={false} />
-            </div>
-          </div>
-          <p className="text-gray-400 text-sm mt-2">Learn something about technology.</p>
+          )}
         </div>
         <div className="flex gap-2">
           <button
@@ -154,7 +175,9 @@ export const TimerPanel: React.FC = () => {
         </div>
         <button
           onClick={() => setIsActive(!isActive)}
-          className="bg-[#EF4444] hover:bg-red-600 text-white text-lg font-bold px-12 py-4 rounded-2xl shadow-lg shadow-red-200 transition-all transform active:scale-95 flex items-center space-x-2"
+          disabled={!selectedTask && mode === 'pomodoro'}
+          className={`text-white text-lg font-bold px-12 py-4 rounded-2xl shadow-lg transition-all transform active:scale-95 flex items-center space-x-2 ${!selectedTask && mode === 'pomodoro' ? 'bg-gray-300 cursor-not-allowed shadow-none' : 'bg-[#EF4444] hover:bg-red-600 shadow-red-200'
+            }`}
         >
           {isActive ? (
             <>
