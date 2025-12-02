@@ -11,7 +11,7 @@ import { useTaskStore } from '../../store/useTaskStore';
 
 const CalendarView: React.FC = () => {
     const { tasks, fetchTasks } = useTaskStore();
-    const [currentDate, setCurrentDate] = useState(new Date(2025, 9, 1)); // Start at Oct 1, 2025
+    const [currentDate, setCurrentDate] = useState(new Date());
     const [viewMode, setViewMode] = useState<CalendarViewType>('month');
 
     useEffect(() => {
@@ -143,10 +143,10 @@ const CalendarView: React.FC = () => {
                                     {day && (
                                         <>
                                             <span className={`text-xs font-bold mb-1 w-6 h-6 flex items-center justify-center rounded-full ${day === new Date().getDate() &&
-                                                    currentDate.getMonth() === new Date().getMonth() &&
-                                                    currentDate.getFullYear() === new Date().getFullYear()
-                                                    ? 'bg-black text-white'
-                                                    : 'text-gray-500'
+                                                currentDate.getMonth() === new Date().getMonth() &&
+                                                currentDate.getFullYear() === new Date().getFullYear()
+                                                ? 'bg-black text-white'
+                                                : 'text-gray-500'
                                                 }`}>
                                                 {day}
                                             </span>
