@@ -29,6 +29,7 @@ export interface TimelineTask {
   desc?: string;
   groupId: number;
   completedPomodoros?: number;
+  pomodorosSinceLastLongBreak?: number;
 }
 
 export interface CalendarTask {

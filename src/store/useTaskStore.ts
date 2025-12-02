@@ -14,6 +14,7 @@ interface TaskState {
     fetchTasks: () => Promise<void>;
     addTask: (task: Omit<TimelineTask, 'id'>) => Promise<void>;
     incrementTaskPomodoro: (taskId: number) => Promise<void>;
+    resetTaskPomodorosSinceLongBreak: (taskId: number) => Promise<void>;
 }
 
 export const useTaskStore = create<TaskState>((set, get) => ({
@@ -75,6 +76,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 
         const updatedTask = { ...task };
         updatedTask.completedPomodoros = (updatedTask.completedPomodoros || 0) + 1;
+        updatedTask.pomodorosSinceLastLongBreak = (updatedTask.pomodorosSinceLastLongBreak || 0) + 1;
 
         if (updatedTask.pomodoros && updatedTask.completedPomodoros >= updatedTask.pomodoros) {
             updatedTask.status = 'done';
@@ -88,7 +90,24 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         try {
             await taskService.updateTask(updatedTask);
         } catch (error) {
-            // Revert on failure (omitted for simplicity, but good practice)
+            console.error('Failed to update task', error);
+        }
+    },
+
+    resetTaskPomodorosSinceLongBreak: async (taskId) => {
+        const { tasks } = get();
+        const task = tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        const updatedTask = { ...task, pomodorosSinceLastLongBreak: 0 };
+
+        set((state) => ({
+            tasks: state.tasks.map(t => t.id === taskId ? updatedTask : t)
+        }));
+
+        try {
+            await taskService.updateTask(updatedTask);
+        } catch (error) {
             console.error('Failed to update task', error);
         }
     }

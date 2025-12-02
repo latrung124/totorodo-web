@@ -8,13 +8,17 @@ import { useTimerStore } from '../../store/useTimerStore';
 
 interface TimerPanelProps {
   selectedTaskId: number | null;
+  onSelectTask?: (taskId: number) => void;
 }
 
-export const TimerPanel: React.FC<TimerPanelProps> = ({ selectedTaskId }) => {
+export const TimerPanel: React.FC<TimerPanelProps> = ({ selectedTaskId, onSelectTask }) => {
   const [mode, setMode] = useState<TimerMode>('pomodoro');
   const [timer, setTimer] = useState(25 * 60);
-  const { isActive, setIsActive } = useTimerStore();
-  const { tasks, incrementTaskPomodoro } = useTaskStore();
+  const {
+    isActive,
+    setIsActive
+  } = useTimerStore();
+  const { tasks, incrementTaskPomodoro, resetTaskPomodorosSinceLongBreak } = useTaskStore();
   const [giveUpModalOpen, setGiveUpModalOpen] = useState(false);
   const [switchModalOpen, setSwitchModalOpen] = useState(false);
   const [pendingMode, setPendingMode] = useState<TimerMode | null>(null);
@@ -27,25 +31,67 @@ export const TimerPanel: React.FC<TimerPanelProps> = ({ selectedTaskId }) => {
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
-  useEffect(() => {
-    let interval: number | null = null;
-    if (isActive && timer > 0) {
-      interval = window.setInterval(() => setTimer(t => t - 1), 1000);
-    } else if (isActive && timer === 0) {
-      setIsActive(false);
-      if (mode === 'pomodoro' && selectedTaskId) {
-        incrementTaskPomodoro(selectedTaskId);
-      }
-    }
-    return () => { if (interval) clearInterval(interval); };
-  }, [isActive, timer, setIsActive, mode, selectedTaskId, incrementTaskPomodoro]);
-
   const getInitialTime = (m: TimerMode) => {
     if (m === 'pomodoro') return 25 * 60;
     if (m === 'short') return 5 * 60;
     if (m === 'long') return 15 * 60;
     return 25 * 60;
   };
+
+  useEffect(() => {
+    let interval: number | null = null;
+    if (isActive && timer > 0) {
+      interval = window.setInterval(() => setTimer(t => t - 1), 1000);
+    } else if (isActive && timer === 0) {
+      setIsActive(false);
+
+      if (mode === 'pomodoro') {
+        if (selectedTaskId) {
+          incrementTaskPomodoro(selectedTaskId);
+
+          // Check if task is done and auto-switch
+          const currentTask = tasks.find(t => t.id === selectedTaskId);
+          if (currentTask) {
+            const updatedCompleted = (currentTask.completedPomodoros || 0) + 1;
+            if (currentTask.pomodoros && updatedCompleted >= currentTask.pomodoros) {
+              // Task is done, find next task
+              const nextTask = tasks.find(t => t.id !== selectedTaskId && t.status !== 'done');
+              if (nextTask && onSelectTask) {
+                onSelectTask(nextTask.id);
+                // Reset timer for new task
+                setTimer(getInitialTime('pomodoro'));
+                return;
+              }
+            }
+
+            // Check for long break based on task's progress
+            const pomosSinceLongBreak = (currentTask.pomodorosSinceLastLongBreak || 0) + 1;
+            if (pomosSinceLongBreak % 4 === 0) {
+              setMode('long');
+              setTimer(getInitialTime('long'));
+            } else {
+              setMode('short');
+              setTimer(getInitialTime('short'));
+            }
+          }
+        } else {
+          // No task selected, fallback to simple logic (or just short break)
+          setMode('short');
+          setTimer(getInitialTime('short'));
+        }
+      } else if (mode === 'short') {
+        setMode('pomodoro');
+        setTimer(getInitialTime('pomodoro'));
+      } else if (mode === 'long') {
+        setMode('pomodoro');
+        setTimer(getInitialTime('pomodoro'));
+        if (selectedTaskId) {
+          resetTaskPomodorosSinceLongBreak(selectedTaskId);
+        }
+      }
+    }
+    return () => { if (interval) clearInterval(interval); };
+  }, [isActive, timer, setIsActive, mode, selectedTaskId, incrementTaskPomodoro, tasks, onSelectTask, resetTaskPomodorosSinceLongBreak]);
 
   const switchMode = (newMode: TimerMode) => {
     if (mode === newMode) return;

@@ -81,7 +81,10 @@ function App() {
             </div>
 
             {/* Center Panel */}
-            <TimerPanel selectedTaskId={selectedTaskId} />
+            <TimerPanel
+              selectedTaskId={selectedTaskId}
+              onSelectTask={setSelectedTaskId}
+            />
 
             {/* Right Panel */}
             <div className={`transition-all duration-500 ease-in-out ${isActive ? 'w-0 opacity-0 overflow-hidden' : 'w-80 opacity-100'}`}>
