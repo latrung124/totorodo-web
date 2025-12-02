@@ -35,7 +35,8 @@ export interface TimelineTask {
 export interface CalendarTask {
   id: number;
   title: string;
-  date: number; // Day of the month for simplicity
+  date: string; // ISO Date YYYY-MM-DD
+  deadlineTime: string; // HH:MM 24h format
   priority: Priority;
   status: TaskStatus;
   pomodoros: number;
