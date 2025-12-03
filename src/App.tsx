@@ -7,12 +7,27 @@ import type { TabView } from './types';
 import { useTimerStore } from './store/useTimerStore';
 import { useTaskStore } from './store/useTaskStore';
 
+import { getFilteredAndSortedTasks } from './utils/taskUtils';
+
 function App() {
   const [currentTab, setCurrentTab] = useState<TabView>('home');
-  const { taskGroups, fetchTaskGroups, fetchTasks, tasks } = useTaskStore();
+  const { taskGroups, fetchTaskGroups, fetchTasks, tasks, setCurrentTask } = useTaskStore();
   const [selectedGroupId, setSelectedGroupId] = useState<number>(1);
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
   const isActive = useTimerStore((state) => state.isActive);
+
+  // Sort & Filter State
+  const [sortOption, setSortOption] = useState('deadline');
+  const [filterOptions, setFilterOptions] = useState({
+    highPriority: true,
+    mediumPriority: true,
+    lowPriority: true,
+    showDone: true, // Default to true
+  });
+
+  const handleFilterChange = (key: string, checked: boolean) => {
+    setFilterOptions(prev => ({ ...prev, [key]: checked }));
+  };
 
   // Create Modal State
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -36,6 +51,27 @@ function App() {
       setSelectedGroupId(taskGroups[0].id);
     }
   }, [taskGroups, selectedGroupId]);
+
+  // Auto-select task on initial load or when tasks change and nothing is selected
+  useEffect(() => {
+    if (selectedTaskId === null && tasks.length > 0) {
+      const sortedTasks = getFilteredAndSortedTasks(tasks, selectedGroupId, filterOptions, sortOption, null);
+      const firstTask = sortedTasks.find(t => t.status !== 'done');
+
+      if (firstTask) {
+        // We call handleSelectTask directly here. 
+        // Note: handleSelectTask calls setCurrentTask which updates the store.
+        // We should be careful about infinite loops, but selectedTaskId === null check prevents it.
+        setSelectedTaskId(firstTask.id);
+        setCurrentTask(firstTask.id);
+      }
+    }
+  }, [tasks, selectedGroupId, selectedTaskId, filterOptions, sortOption, setCurrentTask]);
+
+  const handleSelectTask = (taskId: number) => {
+    setSelectedTaskId(taskId);
+    setCurrentTask(taskId);
+  };
 
   if (!isLoggedIn) {
     return <LoginView onLogin={() => setIsLoggedIn(true)} />;
@@ -78,9 +114,15 @@ function App() {
                 selectedGroupId={selectedGroupId}
                 onSelectGroup={(id) => {
                   setSelectedGroupId(id);
-                  const groupTasks = tasks.filter(t => t.groupId === id);
-                  const currentTask = groupTasks.find(t => t.status === 'current') || groupTasks.find(t => t.status === 'todo');
-                  setSelectedTaskId(currentTask ? currentTask.id : null);
+                  // Auto-select logic
+                  const sortedTasks = getFilteredAndSortedTasks(tasks, id, filterOptions, sortOption, null);
+                  const firstTask = sortedTasks.find(t => t.status !== 'done');
+
+                  if (firstTask) {
+                    handleSelectTask(firstTask.id);
+                  } else {
+                    setSelectedTaskId(null);
+                  }
                 }}
                 onOpenCreateGroup={() => openCreateModal('group')}
               />
@@ -89,7 +131,7 @@ function App() {
             {/* Center Panel */}
             <TimerPanel
               selectedTaskId={selectedTaskId}
-              onSelectTask={setSelectedTaskId}
+              onSelectTask={handleSelectTask}
             />
 
             {/* Right Panel */}
@@ -97,8 +139,12 @@ function App() {
               <TasksList
                 selectedTaskId={selectedTaskId}
                 selectedGroupId={selectedGroupId}
-                onSelectTask={setSelectedTaskId}
+                onSelectTask={handleSelectTask}
                 onOpenCreateTask={() => openCreateModal('task')}
+                sortOption={sortOption}
+                onSortChange={setSortOption}
+                filterOptions={filterOptions}
+                onFilterChange={handleFilterChange}
               />
             </div>
           </main>

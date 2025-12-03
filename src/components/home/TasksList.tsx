@@ -5,64 +5,33 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { MonsterIcon } from '../shared';
 
 import { FilterPopover } from '../shared';
+import { getFilteredAndSortedTasks, type FilterOptions } from '../../utils/taskUtils';
 
 interface TasksListProps {
   selectedTaskId: number | null;
   selectedGroupId: number;
   onSelectTask: (id: number) => void;
   onOpenCreateTask: () => void;
+  sortOption: string;
+  onSortChange: (option: string) => void;
+  filterOptions: FilterOptions;
+  onFilterChange: (key: string, checked: boolean) => void;
 }
 
-export const TasksList: React.FC<TasksListProps> = ({ selectedTaskId, selectedGroupId, onSelectTask, onOpenCreateTask }) => {
+export const TasksList: React.FC<TasksListProps> = ({
+  selectedTaskId,
+  selectedGroupId,
+  onSelectTask,
+  onOpenCreateTask,
+  sortOption,
+  onSortChange,
+  filterOptions,
+  onFilterChange
+}) => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const { tasks } = useTaskStore();
 
-  // Sort & Filter State
-  const [sortOption, setSortOption] = useState('deadline');
-  const [filterOptions, setFilterOptions] = useState({
-    highPriority: true,
-    mediumPriority: true,
-    lowPriority: true,
-    showDone: true, // Default to true
-  });
-
-  const handleFilterChange = (key: string, checked: boolean) => {
-    setFilterOptions(prev => ({ ...prev, [key]: checked }));
-  };
-
-  const filteredTasks = tasks
-    .filter(task => {
-      // Filter by group first
-      if (task.groupId !== selectedGroupId) return false;
-
-      const matchesStatus = filterOptions.showDone ? true : task.status !== 'done';
-      const matchesPriority =
-        (filterOptions.highPriority && task.priority === 'High') ||
-        (filterOptions.mediumPriority && task.priority === 'Medium') ||
-        (filterOptions.lowPriority && task.priority === 'Low');
-
-      // Always show selected task even if it doesn't match filters
-      return (matchesStatus && matchesPriority) || task.id === selectedTaskId;
-    })
-    .sort((a, b) => {
-      if (sortOption === 'priority') {
-        const priorityOrder: Record<string, number> = { High: 3, Medium: 2, Low: 1 };
-        const pA = a.priority ? priorityOrder[a.priority] : 0;
-        const pB = b.priority ? priorityOrder[b.priority] : 0;
-        return (pB || 0) - (pA || 0);
-      }
-      if (sortOption === 'deadline') {
-        // Assuming tasks have a date field or we sort by ID/creation if not
-        return (a.date ? new Date(a.date).getTime() : 0) - (b.date ? new Date(b.date).getTime() : 0);
-      }
-      if (sortOption === 'name') {
-        return a.title.localeCompare(b.title);
-      }
-      if (sortOption === 'pomodoros') {
-        return (b.pomodoros || 0) - (a.pomodoros || 0);
-      }
-      return 0;
-    });
+  const filteredTasks = getFilteredAndSortedTasks(tasks, selectedGroupId, filterOptions, sortOption, selectedTaskId);
 
   const groupTasks = tasks.filter(t => t.groupId === selectedGroupId);
   const selectedTask = tasks.find(t => t.id === selectedTaskId);
@@ -102,9 +71,9 @@ export const TasksList: React.FC<TasksListProps> = ({ selectedTaskId, selectedGr
             isOpen={isFilterOpen}
             onClose={() => setIsFilterOpen(false)}
             sortOption={sortOption}
-            onSortChange={setSortOption}
+            onSortChange={onSortChange}
             filterOptions={filterOptions}
-            onFilterChange={handleFilterChange}
+            onFilterChange={onFilterChange}
           />
         </div>
       </div>

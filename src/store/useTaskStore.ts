@@ -15,6 +15,7 @@ interface TaskState {
     addTask: (task: Omit<TimelineTask, 'id'>) => Promise<void>;
     incrementTaskPomodoro: (taskId: number) => Promise<void>;
     resetTaskPomodorosSinceLongBreak: (taskId: number) => Promise<void>;
+    setCurrentTask: (taskId: number) => Promise<void>;
 }
 
 export const useTaskStore = create<TaskState>((set, get) => ({
@@ -109,6 +110,36 @@ export const useTaskStore = create<TaskState>((set, get) => ({
             await taskService.updateTask(updatedTask);
         } catch (error) {
             console.error('Failed to update task', error);
+        }
+    },
+
+    setCurrentTask: async (taskId: number) => {
+        const { tasks } = get();
+        const taskToSet = tasks.find(t => t.id === taskId);
+        if (!taskToSet) return;
+
+        // Find currently active task to unset
+        const previousCurrent = tasks.find(t => t.status === 'current' && t.id !== taskId);
+
+        const updatedTasks = tasks.map(t => {
+            if (t.id === taskId) {
+                return { ...t, status: 'current' as const };
+            }
+            if (previousCurrent && t.id === previousCurrent.id) {
+                return { ...t, status: 'todo' as const };
+            }
+            return t;
+        });
+
+        set({ tasks: updatedTasks });
+
+        try {
+            if (previousCurrent) {
+                await taskService.updateTask({ ...previousCurrent, status: 'todo' });
+            }
+            await taskService.updateTask({ ...taskToSet, status: 'current' });
+        } catch (error) {
+            console.error('Failed to update task status', error);
         }
     }
 }));
