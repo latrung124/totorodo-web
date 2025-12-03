@@ -55,8 +55,14 @@ export const TimerPanel: React.FC<TimerPanelProps> = ({ selectedTaskId, onSelect
             const updatedCompleted = (currentTask.completedPomodoros || 0) + 1;
             if (currentTask.pomodoros && updatedCompleted >= currentTask.pomodoros) {
               // Task is done, find next task
-              const nextTask = tasks.find(t => t.id !== selectedTaskId && t.status !== 'done');
+              const currentIndex = tasks.findIndex(t => t.id === selectedTaskId);
+              let nextTask = tasks.slice(currentIndex + 1).find(t => t.status !== 'done');
+              if (!nextTask) {
+                nextTask = tasks.slice(0, currentIndex).find(t => t.status !== 'done');
+              }
+
               if (nextTask && onSelectTask) {
+                console.log('Switching to next task:', nextTask.title);
                 onSelectTask(nextTask.id);
                 // Reset timer for new task
                 setTimer(getInitialTime('pomodoro'));
@@ -178,8 +184,14 @@ export const TimerPanel: React.FC<TimerPanelProps> = ({ selectedTaskId, onSelect
             </>
           ) : (
             <div className="flex flex-col justify-center h-full">
-              <h1 className="text-2xl font-bold text-gray-400 tracking-tight">No Task Selected</h1>
-              <p className="text-gray-400 text-sm mt-2">Select a task to start focusing.</p>
+              <h1 className="text-2xl font-bold text-gray-400 tracking-tight">
+                {mode === 'pomodoro' ? 'No Task Selected' : 'Take a Break'}
+              </h1>
+              <p className="text-gray-400 text-sm mt-2">
+                {mode === 'pomodoro'
+                  ? 'Select a task to start focusing.'
+                  : 'You can start a break without a selected task.'}
+              </p>
             </div>
           )}
         </div>
