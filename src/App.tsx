@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Sidebar, Header } from './layouts';
-import { StatisticsView, SettingsView, HelpView, CalendarView } from './components/views';
+import { StatisticsView, SettingsView, HelpView, CalendarView, LoginView } from './components/views';
 import { TaskGroupList, TimerPanel, TasksList } from './components/home';
 import { CreateModal } from './components/shared';
 import type { TabView } from './types';
@@ -23,6 +23,8 @@ function App() {
     setCreateModalOpen(true);
   };
 
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
   useEffect(() => {
     fetchTaskGroups();
     fetchTasks();
@@ -34,6 +36,10 @@ function App() {
       setSelectedGroupId(taskGroups[0].id);
     }
   }, [taskGroups, selectedGroupId]);
+
+  if (!isLoggedIn) {
+    return <LoginView onLogin={() => setIsLoggedIn(true)} />;
+  }
 
   return (
     <div className="flex h-screen w-full bg-[#18181b] text-gray-900 font-sans overflow-hidden" style={{ fontFamily: "'Inter', sans-serif" }}>
