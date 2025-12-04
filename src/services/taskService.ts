@@ -69,5 +69,17 @@ export const taskService = {
 
         const updatedTasks = tasks.map(t => t.id === task.id ? task : t);
         localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(updatedTasks));
+    },
+
+    updateTasks: async (tasksToUpdate: TimelineTask[]): Promise<void> => {
+        await delay(100);
+        const stored = localStorage.getItem(STORAGE_KEYS.TASKS);
+        const allTasks: TimelineTask[] = stored ? JSON.parse(stored) : TIMELINE_TASKS;
+
+        // Create a map for faster lookup
+        const updatesMap = new Map(tasksToUpdate.map(t => [t.id, t]));
+
+        const updatedTasks = allTasks.map(t => updatesMap.has(t.id) ? updatesMap.get(t.id)! : t);
+        localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(updatedTasks));
     }
 };

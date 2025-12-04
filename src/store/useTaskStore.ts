@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { TaskGroup, TimelineTask } from '../types';
 import { taskService } from '../services/taskService';
+import { sanitizeTaskStatuses, isTaskFinished } from '../helpers/statusTaskHelper';
 
 interface TaskState {
     taskGroups: TaskGroup[];
@@ -126,7 +127,8 @@ export const useTaskStore = create<TaskState>((set, get) => ({
                 return { ...t, status: 'current' as const };
             }
             if (previousCurrent && t.id === previousCurrent.id) {
-                return { ...t, status: 'todo' as const };
+                const newStatus = isTaskFinished(t) ? 'done' : 'todo';
+                return { ...t, status: newStatus };
             }
             return t;
         });
@@ -135,7 +137,8 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 
         try {
             if (previousCurrent) {
-                await taskService.updateTask({ ...previousCurrent, status: 'todo' });
+                const newStatus = isTaskFinished(previousCurrent) ? 'done' : 'todo';
+                await taskService.updateTask({ ...previousCurrent, status: newStatus });
             }
             await taskService.updateTask({ ...taskToSet, status: 'current' });
         } catch (error) {

@@ -51,8 +51,8 @@ export const TASK_GROUPS: TaskGroup[] = [
 ];
 
 export const TIMELINE_TASKS: TimelineTask[] = [
-    { id: 1, title: "Lesson 5", status: "done", date: "Finished: 23 Oct, 2025", groupId: 1, completedPomodoros: 1, priority: "High" },
-    { id: 2, title: "Lesson 6", status: "done", date: "Finished: 23 Oct, 2025", groupId: 1, completedPomodoros: 1, priority: "High" },
+    { id: 1, title: "Lesson 5", status: "done", date: "Finished: 23 Oct, 2025", groupId: 1, completedPomodoros: 1, pomodoros: 1, priority: "High" },
+    { id: 2, title: "Lesson 6", status: "done", date: "Finished: 23 Oct, 2025", groupId: 1, completedPomodoros: 1, pomodoros: 1, priority: "High" },
     {
         id: 3,
         title: "Lesson 7",
