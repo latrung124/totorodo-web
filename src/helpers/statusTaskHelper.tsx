@@ -23,10 +23,14 @@ export function sanitizeTaskStatuses(tasks: TimelineTask[]) {
     tasks.forEach(task => {
         const isFinished = isTaskFinished(task);
 
-        // Check if status is mismatching
-        if (isFinished && task.status !== 'done') {
+        // Check if status is mismatching OR if done but date is missing
+        if ((isFinished && task.status !== 'done') || (task.status === 'done' && !task.date)) {
             // 1. Create a corrected version of the task
-            const fixedTask: TimelineTask = { ...task, status: 'done' };
+            const fixedTask: TimelineTask = {
+                ...task,
+                status: 'done',
+                date: task.date || 'Finished'
+            };
 
             // 2. Add to lists
             validTasks.push(fixedTask);

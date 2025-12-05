@@ -52,7 +52,13 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         set({ isLoading: true, error: null });
         try {
             const tasks = await taskService.getTasks();
-            set({ tasks: tasks, isLoading: false });
+            const { validTasks, tasksToSync } = sanitizeTaskStatuses(tasks);
+
+            if (tasksToSync.length > 0) {
+                taskService.updateTasks(tasksToSync).catch(err => console.error('Failed to sync sanitized tasks', err));
+            }
+
+            set({ tasks: validTasks, isLoading: false });
         } catch (error) {
             set({ error: 'Failed to fetch tasks', isLoading: false });
         }
@@ -80,7 +86,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         updatedTask.completedPomodoros = (updatedTask.completedPomodoros || 0) + 1;
         updatedTask.pomodorosSinceLastLongBreak = (updatedTask.pomodorosSinceLastLongBreak || 0) + 1;
 
-        if (updatedTask.pomodoros && updatedTask.completedPomodoros >= updatedTask.pomodoros) {
+        if (isTaskFinished(updatedTask)) {
             updatedTask.status = 'done';
         }
 

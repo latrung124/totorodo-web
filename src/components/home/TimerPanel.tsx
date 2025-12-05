@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Flag, Edit3, Trash2, Play, Pause, Maximize2, Minimize2 } from 'lucide-react';
 import { CampfireIllustration, MonsterIcon, GiveUpModal, SwitchModeModal } from '../shared';
+import { isTaskFinished } from '../../helpers/statusTaskHelper';
 import type { TimerMode } from '../../types';
 
 import { useTaskStore } from '../../store/useTaskStore';
@@ -53,7 +54,8 @@ export const TimerPanel: React.FC<TimerPanelProps> = ({ selectedTaskId, onSelect
           const currentTask = tasks.find(t => t.id === selectedTaskId);
           if (currentTask) {
             const updatedCompleted = (currentTask.completedPomodoros || 0) + 1;
-            if (currentTask.pomodoros && updatedCompleted >= currentTask.pomodoros) {
+            const tempTask = { ...currentTask, completedPomodoros: updatedCompleted };
+            if (isTaskFinished(tempTask)) {
               // Task is done, find next task
               const currentIndex = tasks.findIndex(t => t.id === selectedTaskId);
               let nextTask = tasks.slice(currentIndex + 1).find(t => t.status !== 'done');
