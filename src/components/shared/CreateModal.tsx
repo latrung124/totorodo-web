@@ -4,14 +4,17 @@ import { useTaskStore } from '../../store/useTaskStore';
 
 type Priority = 'High' | 'Medium' | 'Low';
 
+import type { TaskGroup } from '../../types';
+
 interface CreateModalProps {
     type: 'group' | 'task';
     isOpen: boolean;
     onClose: () => void;
     selectedGroupId?: number;
+    initialData?: TaskGroup | null;
 }
 
-export const CreateModal: React.FC<CreateModalProps> = ({ type, isOpen, onClose, selectedGroupId }) => {
+export const CreateModal: React.FC<CreateModalProps> = ({ type, isOpen, onClose, selectedGroupId, initialData }) => {
     if (!isOpen) return null;
 
     // Form State
@@ -21,22 +24,50 @@ export const CreateModal: React.FC<CreateModalProps> = ({ type, isOpen, onClose,
     const [deadline, setDeadline] = useState('');
     const [pomodoros, setPomodoros] = useState(1);
 
-    const { addTaskGroup, addTask } = useTaskStore();
+    const { addTaskGroup, updateTaskGroup, addTask } = useTaskStore();
+
+    // Reset or Populate Form
+    React.useEffect(() => {
+        if (isOpen) {
+            if (initialData && type === 'group') {
+                setName(initialData.title);
+                setDesc(initialData.desc);
+                setPriority(initialData.priority);
+                setDeadline(initialData.deadline === 'No deadline' ? '' : initialData.deadline);
+            } else {
+                setName('');
+                setDesc('');
+                setPriority('Medium');
+                setDeadline('');
+                setPomodoros(1);
+            }
+        }
+    }, [isOpen, initialData, type]);
 
     // Handlers
     const handleSave = async () => {
         if (!name) return alert('Name is required');
 
         if (type === 'group') {
-            await addTaskGroup({
-                title: name,
-                desc,
-                priority,
-                deadline: deadline || 'No deadline',
-                theme: 'light', // Default theme
-                completed: 0,
-                total: 0
-            });
+            if (initialData) {
+                await updateTaskGroup({
+                    ...initialData,
+                    title: name,
+                    desc,
+                    priority,
+                    deadline: deadline || 'No deadline',
+                });
+            } else {
+                await addTaskGroup({
+                    title: name,
+                    desc,
+                    priority,
+                    deadline: deadline || 'No deadline',
+                    theme: 'light', // Default theme
+                    completed: 0,
+                    total: 0
+                });
+            }
         } else {
             if (!selectedGroupId) return alert('No group selected');
             await addTask({
@@ -72,7 +103,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({ type, isOpen, onClose,
                         </div>
                         <div>
                             <h2 className="text-xl font-bold text-gray-900">
-                                {type === 'group' ? 'New Task Group' : 'New Task'}
+                                {initialData ? 'Edit' : 'New'} {type === 'group' ? 'Task Group' : 'Task'}
                             </h2>
                             <p className="text-xs text-gray-500">
                                 {type === 'group' ? 'Organize your goals.' : 'Break it down into steps.'}
@@ -192,7 +223,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({ type, isOpen, onClose,
                         onClick={handleSave}
                         className={`px-6 py-2.5 rounded-xl text-sm font-bold text-white shadow-lg transform active:scale-95 transition-all flex items-center gap-2 ${type === 'group' ? 'bg-black hover:bg-gray-800 shadow-gray-200' : 'bg-red-500 hover:bg-red-600 shadow-red-200'}`}
                     >
-                        <Save size={16} /> Create {type === 'group' ? 'Group' : 'Task'}
+                        <Save size={16} /> {initialData ? 'Update' : 'Create'} {type === 'group' ? 'Group' : 'Task'}
                     </button>
                 </div>
 

@@ -11,6 +11,8 @@ interface TaskState {
 
     fetchTaskGroups: () => Promise<void>;
     addTaskGroup: (group: Omit<TaskGroup, 'id'>) => Promise<void>;
+    updateTaskGroup: (group: TaskGroup) => Promise<void>;
+    deleteTaskGroup: (groupId: number) => Promise<void>;
 
     fetchTasks: () => Promise<void>;
     addTask: (task: Omit<TimelineTask, 'id'>) => Promise<void>;
@@ -45,6 +47,34 @@ export const useTaskStore = create<TaskState>((set, get) => ({
             }));
         } catch (error) {
             set({ error: 'Failed to create task group', isLoading: false });
+        }
+    },
+
+    updateTaskGroup: async (group: TaskGroup) => {
+        set({ isLoading: true, error: null });
+        try {
+            await taskService.updateTaskGroup(group);
+            set((state) => ({
+                taskGroups: state.taskGroups.map(g => g.id === group.id ? group : g),
+                isLoading: false
+            }));
+        } catch (error) {
+            set({ error: 'Failed to update task group', isLoading: false });
+        }
+    },
+
+    deleteTaskGroup: async (groupId: number) => {
+        set({ isLoading: true, error: null });
+        try {
+            await taskService.deleteTaskGroup(groupId);
+            set((state) => ({
+                taskGroups: state.taskGroups.filter(g => g.id !== groupId),
+                // Also remove tasks for this group from local state
+                tasks: state.tasks.filter(t => t.groupId !== groupId),
+                isLoading: false
+            }));
+        } catch (error) {
+            set({ error: 'Failed to delete task group', isLoading: false });
         }
     },
 

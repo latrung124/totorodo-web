@@ -36,6 +36,32 @@ export const taskService = {
         return newGroup;
     },
 
+    updateTaskGroup: async (group: TaskGroup): Promise<void> => {
+        await delay(300);
+        const stored = localStorage.getItem(STORAGE_KEYS.GROUPS);
+        const groups: TaskGroup[] = stored ? JSON.parse(stored) : TASK_GROUPS;
+
+        const updatedGroups = groups.map(g => g.id === group.id ? group : g);
+        localStorage.setItem(STORAGE_KEYS.GROUPS, JSON.stringify(updatedGroups));
+    },
+
+    deleteTaskGroup: async (groupId: number): Promise<void> => {
+        await delay(300);
+        const stored = localStorage.getItem(STORAGE_KEYS.GROUPS);
+        const groups: TaskGroup[] = stored ? JSON.parse(stored) : TASK_GROUPS;
+
+        const updatedGroups = groups.filter(g => g.id !== groupId);
+        localStorage.setItem(STORAGE_KEYS.GROUPS, JSON.stringify(updatedGroups));
+
+        // Also delete tasks associated with this group
+        const storedTasks = localStorage.getItem(STORAGE_KEYS.TASKS);
+        if (storedTasks) {
+            const tasks: TimelineTask[] = JSON.parse(storedTasks);
+            const updatedTasks = tasks.filter(t => t.groupId !== groupId); // Assuming tasks have groupId
+            localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(updatedTasks));
+        }
+    },
+
     getTasks: async (): Promise<TimelineTask[]> => {
         await delay(300);
         const stored = localStorage.getItem(STORAGE_KEYS.TASKS);

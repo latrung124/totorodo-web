@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Search, Plus, Filter, MoreHorizontal, Flag, Calendar as CalendarIcon, X } from 'lucide-react';
+import { Search, Plus, Filter, MoreHorizontal, Flag, Calendar as CalendarIcon, X, CheckCircle2, Edit3, Trash2 } from 'lucide-react';
 import { useTaskStore } from '../../store/useTaskStore';
+import type { TaskGroup } from '../../types';
 import { AnimatePresence, motion } from 'framer-motion';
 
 import { FilterPopover } from '../shared';
@@ -9,13 +10,47 @@ interface TaskGroupListProps {
   selectedGroupId: number;
   onSelectGroup: (id: number) => void;
   onOpenCreateGroup: () => void;
+  onEditGroup: (group: TaskGroup) => void;
 }
 
-export const TaskGroupList: React.FC<TaskGroupListProps> = ({ selectedGroupId, onSelectGroup, onOpenCreateGroup }) => {
+interface DeleteGroupModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+}
+
+const DeleteGroupModal: React.FC<DeleteGroupModalProps> = ({ isOpen, onClose, onConfirm }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity" onClick={onClose} />
+      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200 p-6 text-center">
+        <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-600">
+          <Trash2 size={24} />
+        </div>
+        <h3 className="text-lg font-bold text-gray-900 mb-2">Delete Task Group?</h3>
+        <p className="text-sm text-gray-500 mb-6">
+          All tasks and task groups within this group will also be deleted. Do you want to remove this Task Group?
+        </p>
+        <div className="flex gap-3">
+          <button onClick={onClose} className="flex-1 px-4 py-2.5 rounded-xl text-sm font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors">No</button>
+          <button onClick={onConfirm} className="flex-1 px-4 py-2.5 rounded-xl text-sm font-bold text-white bg-red-500 hover:bg-red-600 shadow-lg shadow-red-200 transition-colors">Yes</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const TaskGroupList: React.FC<TaskGroupListProps> = ({ selectedGroupId, onSelectGroup, onOpenCreateGroup, onEditGroup }) => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const { taskGroups, tasks } = useTaskStore();
+  const { taskGroups, tasks, updateTaskGroup, deleteTaskGroup } = useTaskStore();
+
+  // Menu State
+  const [activeGroupMenuId, setActiveGroupMenuId] = useState<number | null>(null);
+  const [groupToDeleteId, setGroupToDeleteId] = useState<number | null>(null);
 
   // Sort & Filter State
   const [sortOption, setSortOption] = useState('priority');
@@ -27,6 +62,27 @@ export const TaskGroupList: React.FC<TaskGroupListProps> = ({ selectedGroupId, o
 
   const handleFilterChange = (key: string, checked: boolean) => {
     setFilterOptions(prev => ({ ...prev, [key]: checked }));
+  };
+
+  const handleDeleteGroupClick = (id: number) => {
+    setGroupToDeleteId(id);
+    setActiveGroupMenuId(null);
+  };
+
+  const confirmDeleteGroup = async () => {
+    if (groupToDeleteId) {
+      await deleteTaskGroup(groupToDeleteId);
+      setGroupToDeleteId(null);
+    }
+  };
+
+  const handleDoneGroupClick = async (group: TaskGroup) => {
+    // Mark all tasks in group as done? Or just mark group as completed?
+    // Based on example: setTaskGroups(prev => prev.map(g => g.id === id ? { ...g, completed: g.total } : g));
+    // But we should probably update the actual tasks too if we want to be thorough.
+    // For now let's just update the group's completed count to match total.
+    await updateTaskGroup({ ...group, completed: group.total });
+    setActiveGroupMenuId(null);
   };
 
   // Filter groups based on search query and filter options
@@ -58,6 +114,11 @@ export const TaskGroupList: React.FC<TaskGroupListProps> = ({ selectedGroupId, o
 
   return (
     <section className="w-80 bg-white rounded-2xl shadow-sm flex flex-col">
+      <DeleteGroupModal
+        isOpen={!!groupToDeleteId}
+        onClose={() => setGroupToDeleteId(null)}
+        onConfirm={confirmDeleteGroup}
+      />
       <div className="p-4 border-b border-gray-100 flex justify-between items-center h-16">
         {isSearchOpen ? (
           <div className="flex items-center w-full gap-2 animate-in fade-in slide-in-from-right-5 duration-200">
@@ -155,7 +216,22 @@ export const TaskGroupList: React.FC<TaskGroupListProps> = ({ selectedGroupId, o
                       }`}>
                       {group.priority} Priority
                     </span>
-                    <MoreHorizontal size={16} className="text-gray-400" />
+                    <div className="relative">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setActiveGroupMenuId(activeGroupMenuId === group.id ? null : group.id); }}
+                        className="text-gray-400 hover:text-black p-1 rounded-full hover:bg-gray-100 transition-colors"
+                      >
+                        <MoreHorizontal size={16} />
+                      </button>
+                      {/* Dropdown Menu */}
+                      {activeGroupMenuId === group.id && (
+                        <div className="absolute right-0 top-6 w-32 bg-white rounded-xl shadow-xl border border-gray-100 z-50 py-1 animate-in fade-in zoom-in-95 duration-200">
+                          <button onClick={(e) => { e.stopPropagation(); handleDoneGroupClick(group); }} className="w-full text-left px-4 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 flex items-center gap-2"><CheckCircle2 size={12} className="text-green-500" /> Done</button>
+                          <button onClick={(e) => { e.stopPropagation(); onEditGroup(group); setActiveGroupMenuId(null); }} className="w-full text-left px-4 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 flex items-center gap-2"><Edit3 size={12} className="text-blue-500" /> Edit</button>
+                          <button onClick={(e) => { e.stopPropagation(); handleDeleteGroupClick(group.id); }} className="w-full text-left px-4 py-2 text-xs font-medium text-red-600 hover:bg-red-50 flex items-center gap-2"><Trash2 size={12} /> Remove</button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div className="flex items-center space-x-2 mb-2">
                     <div className={`p-1.5 rounded-lg ${selectedGroupId === group.id ? 'bg-white/10' : 'bg-white border border-gray-200'

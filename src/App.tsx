@@ -3,7 +3,7 @@ import { Sidebar, Header } from './layouts';
 import { StatisticsView, SettingsView, HelpView, CalendarView, LoginView } from './components/views';
 import { TaskGroupList, TimerPanel, TasksList } from './components/home';
 import { CreateModal } from './components/shared';
-import type { TabView } from './types';
+import type { TabView, TaskGroup } from './types';
 import { useTimerStore } from './store/useTimerStore';
 import { useTaskStore } from './store/useTaskStore';
 
@@ -32,9 +32,15 @@ function App() {
   // Create Modal State
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [createModalType, setCreateModalType] = useState<'group' | 'task'>('group');
+  const [groupToEdit, setGroupToEdit] = useState<TaskGroup | null>(null);
 
-  const openCreateModal = (type: 'group' | 'task') => {
+  const openCreateModal = (type: 'group' | 'task', data?: TaskGroup) => {
     setCreateModalType(type);
+    if (type === 'group' && data) {
+      setGroupToEdit(data);
+    } else {
+      setGroupToEdit(null);
+    }
     setCreateModalOpen(true);
   };
 
@@ -87,6 +93,7 @@ function App() {
         type={createModalType}
         onClose={() => setCreateModalOpen(false)}
         selectedGroupId={selectedGroupId}
+        initialData={groupToEdit}
       />
 
       {/* Sidebar */}
@@ -125,6 +132,7 @@ function App() {
                   }
                 }}
                 onOpenCreateGroup={() => openCreateModal('group')}
+                onEditGroup={(group) => openCreateModal('group', group)}
               />
             </div>
 
