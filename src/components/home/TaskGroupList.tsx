@@ -3,6 +3,7 @@ import { Search, Plus, Filter, MoreHorizontal, Flag, Calendar as CalendarIcon, X
 import { useTaskStore } from '../../store/useTaskStore';
 import type { TaskGroup } from '../../types';
 import { AnimatePresence, motion } from 'framer-motion';
+import { formatDeadline } from '../../helpers/dateHelper';
 
 import { FilterPopover } from '../shared';
 
@@ -270,7 +271,7 @@ export const TaskGroupList: React.FC<TaskGroupListProps> = ({ selectedGroupId, o
                     <span>{completedTasks}/{totalTasks} completed</span>
                     <div className="flex items-center space-x-1">
                       <CalendarIcon size={10} />
-                      <span>{group.deadline}</span>
+                      <span>{formatDeadline(group.deadline)}</span>
                     </div>
                   </div>
                 </motion.div>

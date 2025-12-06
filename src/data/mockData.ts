@@ -3,12 +3,12 @@ import { Flag, Edit3, Layers } from 'lucide-react';
 import type { TaskGroup, TimelineTask, HistoryTask, FaqItem, LanguageItem, CalendarTask } from '../types';
 
 export const CALENDAR_TASKS: CalendarTask[] = [
-    { id: 101, title: "Review Chapter 1", date: 5, priority: "High", status: "done", pomodoros: 2, completedPomodoros: 2 },
-    { id: 102, title: "Math Assignment", date: 12, priority: "Medium", status: "todo", pomodoros: 4, completedPomodoros: 0 },
-    { id: 103, title: "Design Mockups", date: 12, priority: "High", status: "current", pomodoros: 6, completedPomodoros: 3 },
-    { id: 104, title: "Team Meeting", date: 15, priority: "Low", status: "todo", pomodoros: 1, completedPomodoros: 0 },
-    { id: 105, title: "Submit Report", date: 24, priority: "High", status: "todo", pomodoros: 3, completedPomodoros: 0 },
-    { id: 106, title: "Email Client", date: 24, priority: "Low", status: "todo", pomodoros: 1, completedPomodoros: 0 },
+    { id: 101, title: "Review Chapter 1", date: "2025-12-05", priority: "High", status: "done", pomodoros: 2, completedPomodoros: 2, deadlineTime: "10:00" },
+    { id: 102, title: "Math Assignment", date: "2025-12-12", priority: "Medium", status: "todo", pomodoros: 4, completedPomodoros: 0, deadlineTime: "14:00" },
+    { id: 103, title: "Design Mockups", date: "2025-12-12", priority: "High", status: "current", pomodoros: 6, completedPomodoros: 3, deadlineTime: "16:00" },
+    { id: 104, title: "Team Meeting", date: "2025-12-15", priority: "Low", status: "todo", pomodoros: 1, completedPomodoros: 0, deadlineTime: "09:00" },
+    { id: 105, title: "Submit Report", date: "2025-12-24", priority: "High", status: "todo", pomodoros: 3, completedPomodoros: 0, deadlineTime: "17:00" },
+    { id: 106, title: "Email Client", date: "2025-12-24", priority: "Low", status: "todo", pomodoros: 1, completedPomodoros: 0, deadlineTime: "11:00" },
 ];
 
 export const UNSCHEDULED_TASKS = [
@@ -25,7 +25,7 @@ export const TASK_GROUPS: TaskGroup[] = [
         priority: "High",
         completed: 6,
         total: 8,
-        deadline: "1 day left",
+        deadline: "2025-12-07", // 1 day left from 2025-12-06
         theme: "dark"
     },
     {
@@ -35,7 +35,7 @@ export const TASK_GROUPS: TaskGroup[] = [
         priority: "Medium",
         completed: 0,
         total: 3,
-        deadline: "7 days left",
+        deadline: "2025-12-13", // 7 days left
         theme: "light"
     },
     {
@@ -45,7 +45,7 @@ export const TASK_GROUPS: TaskGroup[] = [
         priority: "Low",
         completed: 12,
         total: 84,
-        deadline: "34 days left",
+        deadline: "2026-01-09", // ~34 days left
         theme: "light"
     }
 ];
